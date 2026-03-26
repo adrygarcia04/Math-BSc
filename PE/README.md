@@ -2,5 +2,5 @@
 [ES] Los archivos de esta carpeta se desarrollan en el seno de la asignatura «Procesos Estocásticos», una asignatura optativa del Grado en Matemáticas por la Universidad de Granada. El planteamiento para el curso 2025/2026 de esta asignatura, tiene como uno de sus objetivos transversales desarrollar competencias complementarias a las adquiridas en dicha titulación tales como el lenguaje de programación Python y algunas de sus librerías más útiles para la ciencia de datos y modelización (por ejemplo: *NumPy*, *Matplotlib*, ...).
 
 [EN] The files in this folder were developed within the framework of the subject «Stochastic Processes», an elective course in the Bachelor's Degree in Mathematics at the University of Granada. The approach for the 2025/2026 academic year for this subject has as one of its objectives the development of skills complementary to those acquired in the degree, such as the Python programming language and some of its most useful libraries for data science and modeling (such as: *NumPy*, *Matplotlib*, ...).
-# **ARCHIVOS EN LA CARPETA**
+# **ARCHIVOS EN LA CARPETA || FILES IN THIS FOLDER**
 * **Simulación_PAS**
