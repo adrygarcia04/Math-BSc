@@ -11,5 +11,5 @@
 **INF_II:** Informática II || Computing II
 
 *Cuarto curso*\
-**PE:** Procesos estocásticos || Stochastic processes
+**PE:** Procesos estocásticos || Stochastic processes\
 **EC:** Estadística computacional || Computational statistics
