@@ -3,4 +3,4 @@
 
 [EN] The files in this folder were developed within the framework of the subject «Stochastic Processes», an elective course in the Bachelor's Degree in Mathematics at the University of Granada. During the 2025/2026 academic year, this subject has as one of its objectives the development of complementary skills to those acquired in the degree, such as the Python programming language and some of its most useful libraries for data science and modeling (such as: *NumPy*, *Matplotlib*, ...).
 # **ARCHIVOS EN LA CARPETA || FILES IN THIS FOLDER**
-* **Simulación_PAS**
+* **Simulación_PAS** (Solo disponible en español todavía || Only available in Spanish yet)
