@@ -4,4 +4,4 @@
 [EN] 
 
 # **ARCHIVOS EN LA CARPETA || FILES IN THIS FOLDER**
-* **Simulación de PE's y ST's** (Solo disponible en español todavía || Only available in Spanish yet)
+* **Simulación_de_PE's_y_ST's** (Solo disponible en español todavía || Only available in Spanish yet)
