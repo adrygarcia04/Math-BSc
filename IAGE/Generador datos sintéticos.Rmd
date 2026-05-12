@@ -1,0 +1,1853 @@
+---
+title: '[IAGE] Datos sintéticos'
+author: "Adrián García Barragán"
+date: "2026-04-29"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    theme: united
+    highlight: tango
+---
+
+Instalo los paquetes necesarios.
+
+```{r}
+paquetes_necesarios<-c("tidyr","dplyr","openxlsx")
+
+instalar_si_falta<-function(pkg){
+  if (!require(pkg, character.only=TRUE)){
+    install.packages(pkg)
+    library(pkg, character.only=TRUE)
+  }
+}
+
+
+invisible(lapply(paquetes_necesarios, instalar_si_falta))
+```
+
+Para hacer reproducibles todas las simulaciones, con `set.seed()`, dejare fija la semilla $0$.
+
+```{r}
+set.seed(0)
+```
+
+## **Evolución de los KPI's en redes sociales**
+
+### **1 Instagram**
+
+#### **1.1  Simulo el número de publicaciones semanal**
+
+Establezo que el número de publicaciones semanales en instagram por empresa oscila entre $1$ y $4$. Además, determino que publicar $1$, $2$ y $3$ veces son equiprobables y que publicar $4$ es bastante menos probable.
+
+Para realizar la simulación con las restricciones comentadas, genero números aleatorios entre el $0.5$ y el $3.75$ según una distribución uniforme con `runif()`. 
+
+```{r}
+weekly_post<-matrix(round(runif(1040,0.5,3.75)),nrow=10)
+```
+
+Lo muestro por pantalla para cerciorarme de que la ejecución es correcta.
+
+```{r}
+weekly_post
+```
+
+#### **1.2 Simulo el número de seguidores semanal**
+
+Como punto de partida para la simulación tomo el número de seguidores a las 11:30 del día 29/04/2026 en las cuentas oficiales de España (variable `followers_beginning`).
+
+Calculo la evolución del número de seguidores semanal (`weekly_followers`) como suma de cuatro componentes:
+
+1.  `lin_evol`: El número de seguidores actuales multiplicado por una tendencia (`trend`) de crecimiento lineal definida manualmente en función del número de seguidores y de la posición de la empresa.
+2.  `cycle`: Un factor cíclico en el que cada empresa tiene un periodo (`period`) distinto y la amplitud (`width`) es proporcional a la tendencia de crecimiento lineal.
+3.  `white_noise`: Un factor aleaotrio proporcional al producto entre muestras de una distribución normal tipificada y la amplitud (`width`).
+4.  `thanks_post`: Un factor de seguidores "ganados" gracias a las publicaciones, proporcional al producto entre el número de publicaciones semanal (`weekly_post`) y a la amplitud(`width`).
+
+```{r}
+t<-matrix(rep(seq(1,104),10),nrow=10,byrow=T)
+
+followers_beginning<-matrix(rep(c(106000, 53900, 227000, 31800, 21800, 156000, 32000, 57400, 9000, 
+                                  18900),104),nrow=10)
+
+trend<-c(325,300,350,200,175,275,225,250,100,150)
+lin_evol<-followers_beginning+sweep(t, MARGIN=1, trend, FUN="*")
+
+period<-c(17,-11,31,13,-5,19,23,-7,3,29)
+width<-trend/3
+cycle<-width*sin(period*t)
+
+white_noise<-50*width*matrix(rnorm(1040),nrow=10)
+
+thanks_post<-width*weekly_post/2
+
+weekly_followers<-round(lin_evol+white_noise+cycle+thanks_post)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **1.3 Simulo la segmentación por región**
+
+[Explicación]
+
+```{r}
+provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
+             1171547, 1167233, 1135623, 1087319, 1015128, 998443, 947818, 945797, 875530, 
+             830429, 773163, 770554, 755081, 733149, 683854, 665155, 627622, 618143, 593623, 
+             538789, 528644, 494848, 458226, 448030, 390751, 388190, 362663, 341961, 328446, 
+             326803, 326022, 305278, 285839, 230087, 195516, 168725, 159123, 158421, 153663, 
+             134545, 88747, 84627, 86487)
+
+#Santander
+weekly_followers_poblation<-matrix(rep(weekly_followers[1,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_santander_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[1,]<-colSums(weekly_followers_santander_prov)
+
+#BBVA
+weekly_followers_poblation<-matrix(rep(weekly_followers[2,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bbva_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[2,]<-colSums(weekly_followers_bbva_prov)
+
+#CaixaBank
+weekly_followers_poblation<-matrix(rep(weekly_followers[3,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_caixabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[3,]<-colSums(weekly_followers_caixabank_prov)
+
+#Sabadell
+weekly_followers_poblation<-matrix(rep(weekly_followers[4,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_sabadell_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[4,]<-colSums(weekly_followers_sabadell_prov)
+
+#Bankinter
+weekly_followers_poblation<-matrix(rep(weekly_followers[5,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bankinter_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[5,]<-colSums(weekly_followers_bankinter_prov)
+
+#Unicaja
+weekly_followers_poblation<-matrix(rep(weekly_followers[6,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_unicaja_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[6,]<-colSums(weekly_followers_unicaja_prov)
+
+#Abanca
+weekly_followers_poblation<-matrix(rep(weekly_followers[7,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_abanca_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[7,]<-colSums(weekly_followers_abanca_prov)
+
+#Kutxabank
+weekly_followers_poblation<-matrix(rep(weekly_followers[8,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_kutxabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[8,]<-colSums(weekly_followers_kutxabank_prov)
+
+#Banco de Crédito Social Cooperativo
+weekly_followers_poblation<-matrix(rep(weekly_followers[9,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bcc_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[9,]<-colSums(weekly_followers_bcc_prov)
+
+#Ibercaja
+weekly_followers_poblation<-matrix(rep(weekly_followers[10,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_ibercaja_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[10,]<-colSums(weekly_followers_ibercaja_prov)
+```
+
+Represento la evolución del número de seguidores por pantalla para cerciorarme de que los errores de redondeo no la han modificado sustancialmente.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **1.4 Simulo la segmentación por edad y por género**
+
+[Explicación]
+
+```{r}
+bd_ig<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                      "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                      "Ibercaja"),15))
+bd_ig<-cbind(bd_ig,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+bd_ig<-cbind(bd_ig,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+bd_ig<-cbind(bd_ig,rep(1,150))
+names(bd_ig)<-c("Empresa", "Edad", "Género", "Semana")
+
+i=2
+
+while(i %in% 2:104){
+  bd_ig_aux<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                        "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                        "Ibercaja"),15))
+  bd_ig_aux<-cbind(bd_ig_aux,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+  bd_ig_aux<-cbind(bd_ig_aux,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+  bd_ig_aux<-cbind(bd_ig_aux,rep(i,150))
+  names(bd_ig_aux)<-c("Empresa", "Edad", "Género", "Semana")
+  bd_ig<-rbind(bd_ig,bd_ig_aux)
+  i<-i+1
+}
+
+bd_ig<-cbind(bd_ig,rep("Instagram",15600))
+bd_ig<-bd_ig[,c(4,1,2,3,5)]
+bd_ig<-arrange(bd_ig, Semana, Empresa)
+
+generar_porcentajes<-function(tendencia_edad,tendencia_genero){
+
+  pesos<-tendencia_edad[bd_ig$Edad]*tendencia_genero[bd_ig$Género]
+  
+  bd_ig$Porcentaje<-0
+  
+  for(grupo in seq(1, nrow(bd_ig), by=15)){
+    idx<-grupo:min(grupo+14, nrow(bd_ig))
+    pesos_grupo<-pesos[idx]*rnorm(15,1,0.1)
+    bd_ig$Porcentaje[idx]<<-pesos_grupo/sum(pesos_grupo)
+  }
+}
+
+generar_porcentajes(tendencia_edad=c("<15"=5, "15-20"=10, "21-30"=7,
+                                       "31-55"=3, ">55"=1),
+                    tendencia_genero=c("Hombre"=5, "Mujer"=4.5, "Otro"=0.5))
+names(bd_ig)<-c("Semana","Empresa", "Edad", "Género", "Red social", "Porcentaje")
+```
+
+#### **1.5 Simulo el número de «likes» semanal**
+
+Dado que considero que el número de «likes» semanal guarda cierta relación con el número de seguidores, pero también posee una componente eminentemente aleatoria, calculo la evolución del número de «likes» semanal (`weekly_likes`) como suma de dos componentes:
+
+1.  `fix_likes`: Proporcional al producto entre el número de publicaciones semanales (`weekly_post`) y el número de seguidores semanales (`weekly_followers`).
+2.  `variable_likes`: Un factor aleatorio que es producto el número de publicaciones semanales (`weekly_post`), el número de seguidores semanales (`weekly_followers`) y muestras en valor absoluto de una distribución normal de media $0.00001$ y varianza $0.005$.
+
+```{r}
+fix_likes<-weekly_post*weekly_followers/500
+variable_likes<-weekly_post*abs(rnorm(1040,0.00001,0.005)*weekly_followers)
+weekly_likes<-round(fix_likes+variable_likes)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_likes)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «likes» semanales")
+```
+
+#### **1.6 Simulo el número de comentarios semanal**
+
+Calculo la evolución del número de comentarios semanal (`weekly_comments`) como producto de los «likes» semanales (`weekly_likes`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.075$.
+
+Además, corrijo aquellos valores estrictamente menores que $3$ y los sustituyo por valores generados mediante una distribución uniforme entre $3$ y $7$ (ambos incluidos).
+
+```{r}
+weekly_comments<-round(weekly_likes*abs(rnorm(1040,0,0.075)))
+weekly_comments[which(weekly_comments<3)]<-round(runif(sum(weekly_comments<3),2.5,7.5))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_comments)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de comentarios semanales")
+```
+
+#### **1.7 Simulo el número de «shares» semanal**
+
+Calculo la evolución del número de «shares» semanal (`weekly_shares`) como suma de dos componentes:
+
+1.  `comments_correlation`: El producto de los comentarios semanales (`weekly_comments`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.01$.
+2.  `comments_variability`:El producto de los comentarios semanales (`weekly_comments`) y las matriz traspuesta de las muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.025$.
+
+```{r}
+comments_correlation<-weekly_comments*abs(rnorm(1040,0,0.01))
+comments_variability<-weekly_comments*t(matrix(abs(rnorm(1040,0,0.025)),ncol=10))
+
+weekly_shares<-round(comments_correlation+comments_variability)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_shares)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «shares» semanales")
+```
+
+#### **1.8 Simulo el alcance semanal**
+
+Calculo la evolución del alcance semanal (`weekly_reach`) como suma de dos componentes:
+
+1.  `weekly_followers_reach`: Proporcional al producto del número de publicaciones semanales (`weekly_post`) y el número de seguidores semanal (`weekly_followers`).
+2.  `weekly_virality_reach`: El producto ponderado del número de «shares» semanal (`weekly_shares`), el número de «likes» semanal (`weekly_likes`) y los comentarios semanales (`weekly_comments`).
+
+```{r}
+weekly_followers_reach<-(weekly_post*weekly_followers)/250
+weekly_virality_reach<-5*weekly_shares+2*weekly_likes+weekly_comments
+
+weekly_reach<-round(weekly_followers_reach+weekly_virality_reach)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_reach)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del alcance semanal")
+```
+
+#### **1.9 Simulo las impresiones semanales**
+
+Calculo la evolución de las impresiones semanales (`weekly_impressions`) como producto entre el alcance semanal (`weekly_reach`) y las muestras de una distribución uniforme entre $1.5$ y $5$.
+
+```{r}
+weekly_impressions<-round(weekly_reach*runif(1040,1.5,5))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_impressions)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de las impresiones semanales")
+```
+
+#### **1.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
+
+[Explicación]
+
+```{r}
+sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
+sent_ai_val[which(sent_ai_val>0.97)]<-0.97
+sent_ai_val[which(sent_ai_val<0.05)]<-0.05
+sent_ai_val[which(weekly_comments>500)]<-runif(sum(weekly_comments>500),0.65,0.9)
+sent_ai_val<-round(sent_ai_val,2)
+
+sent_ai<-matrix(rep("Neutro",1040),nrow=10)
+sent_ai[which(sent_ai_val<0.3)]<-rep("Negativo", sum(sent_ai_val<0.3))
+sent_ai[which(sent_ai_val<0.15)]<-rep("Muy negativo", sum(sent_ai_val<0.15))
+sent_ai[which(sent_ai_val>0.7)]<-rep("Positivo", sum(sent_ai_val>0.7))
+sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
+```
+
+#### **1.11 Creo las bases de datos normalizadas**
+
+**Base de datos de seguidores e interacciones**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+bd<-expand.grid(
+  Semana=seq(1,104),
+  Empresa=empresas
+)
+
+bd$Red_Social<-"Instagram"
+bd$Publicaciones<-as.vector(t(weekly_post))
+bd$Seguidores<-as.vector(t(weekly_followers))
+bd$Likes<-as.vector(t(weekly_likes))
+bd$Comentarios<-as.vector(t(weekly_comments))
+bd$Shares<-as.vector(t(weekly_shares))
+bd$Alcance<-as.vector(t(weekly_reach))
+bd$Impresiones<-as.vector(t(weekly_impressions))
+bd$Sentimiento_comentarios<-as.vector(t(sent_ai))
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd
+```
+
+**Base de datos de seguidores segmentados por provincia**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+provinces_name<-c( "Madrid", "Barcelona", "Valencia", "Alicante", "Sevilla", "Málaga", "Murcia",
+                   "Cádiz", "Islas Baleares", "Las Palmas", "Vizcaya", "La Coruña",
+                   "Santa Cruz de Tenerife", "Asturias", "Zaragoza", "Pontevedra", "Granada",
+                   "Tarragona", "Gerona", "Córdoba", "Almería", "Toledo", "Guipúzcoa", "Navarra",
+                   "Badajoz", "Castellón", "Jaén", "Cantabria", "Huelva", "Valladolid",
+                   "Ciudad Real", "Lérida", "León", "Albacete", "Cáceres", "Burgos", "Álava",
+                   "Salamanca", "La Rioja", "Lugo", "Orense", "Guadalajara", "Huesca", "Cuenca",
+                   "Zamora", "Palencia", "Ávila", "Segovia", "Teruel", "Soria", "Ceuta", "Melilla")
+
+matrices_prov<-list(
+  weekly_followers_santander_prov,
+  weekly_followers_bbva_prov,
+  weekly_followers_caixabank_prov,
+  weekly_followers_sabadell_prov,
+  weekly_followers_bankinter_prov,
+  weekly_followers_unicaja_prov,
+  weekly_followers_abanca_prov,
+  weekly_followers_kutxabank_prov,
+  weekly_followers_bcc_prov,
+  weekly_followers_ibercaja_prov
+)
+
+for (i in seq_along(matrices_prov)){
+  rownames(matrices_prov[[i]])<-provinces_name
+  colnames(matrices_prov[[i]])<-seq(1,104)
+}
+
+bd2<-data.frame()
+
+for (i in seq_along(matrices_prov)){
+  mat<-matrices_prov[[i]]
+  
+  bd_temp<-as.data.frame(mat)
+  bd_temp$provincia<-rownames(mat)
+  bd_temp<-pivot_longer(bd_temp, cols=-provincia, names_to="semana", values_to="seguidores_instagram")
+  bd_temp$semana<-as.integer(bd_temp$semana)
+  bd_temp$empresa<-empresas[i]
+  
+  bd2<-rbind(bd2, bd_temp)
+}
+
+bd2<-arrange(bd2, empresa, semana, provincia)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd2
+```
+
+**Base de datos de porcentaje de seguidores segmentados por edad y género**
+
+```{r}
+bd3<-bd_ig
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd3
+```
+
+### **2 Facebook**
+
+#### **2.1  Simulo el número de publicaciones semanal**
+
+Establezo que el número de publicaciones semanales en instagram por empresa oscila entre $1$ y $3$. Además, determino que publicar $1$ y $2$ veces son equiprobables y que publicar $3$ es bastante menos probable.
+
+Para realizar la simulación con las restricciones comentadas, genero números aleatorios entre el $0.5$ y el $2.75$ según una distribución uniforme con `runif()`. 
+
+```{r}
+weekly_post<-matrix(round(runif(1040,0.5,2.75)),nrow=10)
+```
+
+Lo muestro por pantalla para cerciorarme de que la ejecución es correcta.
+
+```{r}
+weekly_post
+```
+
+#### **2.2 Simulo el número de seguidores semanal**
+
+Como punto de partida para la simulación tomo el número de seguidores a las 00:30 del día 12/05/2026 en las cuentas oficiales de España (variable `followers_beginning`).
+
+Calculo la evolución del número de seguidores semanal (`weekly_followers`) como suma de cuatro componentes:
+
+1.  `lin_evol`: El número de seguidores actuales multiplicado por una tendencia (`trend`) de crecimiento lineal  definida manualmente en función del número de seguidores y de la posición de la empresa.
+2.  `cycle`: Un factor cíclico en el que cada empresa tiene un periodo (`period`) distinto y la amplitud (`width`) es proporcional a la tendencia de crecimiento lineal.
+3.  `white_noise`: Un factor aleaotrio proporcional al producto entre muestras de una distribución normal tipificada y la amplitud (`width`).
+4.  `thanks_post`: Un factor de seguidores "ganados" gracias a las publicaciones, proporcional al producto entre el número de publicaciones semanal (`weekly_post`) y a la amplitud(`width`).
+
+```{r}
+t<-matrix(rep(seq(1,104),10),nrow=10,byrow=T)
+
+followers_beginning<-matrix(rep(c(330000, 6400000, 252000, 83000, 106000, 39000, 86000, 69000, 29000,
+                                  21000),104),nrow=10)
+
+trend<-c(350,1900,300,175,225,100,175,150,125,90)
+lin_evol<-followers_beginning+sweep(t, MARGIN=1, trend, FUN="*")
+
+period<-c(17,-11,31,13,-5,19,23,-7,3,29)
+width<-trend/3
+cycle<-width*sin(period*t)
+
+white_noise<-50*width*matrix(rnorm(1040),nrow=10)
+
+thanks_post<-width*weekly_post/2
+
+weekly_followers<-round(lin_evol+white_noise+cycle+thanks_post)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **2.3 Simulo la segmentación por región**
+
+[Explicación]
+
+```{r}
+provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
+             1171547, 1167233, 1135623, 1087319, 1015128, 998443, 947818, 945797, 875530, 
+             830429, 773163, 770554, 755081, 733149, 683854, 665155, 627622, 618143, 593623, 
+             538789, 528644, 494848, 458226, 448030, 390751, 388190, 362663, 341961, 328446, 
+             326803, 326022, 305278, 285839, 230087, 195516, 168725, 159123, 158421, 153663, 
+             134545, 88747, 84627, 86487)
+
+#Santander
+weekly_followers_poblation<-matrix(rep(weekly_followers[1,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_santander_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[1,]<-colSums(weekly_followers_santander_prov)
+
+#BBVA
+weekly_followers_poblation<-matrix(rep(weekly_followers[2,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bbva_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[2,]<-colSums(weekly_followers_bbva_prov)
+
+#CaixaBank
+weekly_followers_poblation<-matrix(rep(weekly_followers[3,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_caixabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[3,]<-colSums(weekly_followers_caixabank_prov)
+
+#Sabadell
+weekly_followers_poblation<-matrix(rep(weekly_followers[4,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_sabadell_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[4,]<-colSums(weekly_followers_sabadell_prov)
+
+#Bankinter
+weekly_followers_poblation<-matrix(rep(weekly_followers[5,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bankinter_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[5,]<-colSums(weekly_followers_bankinter_prov)
+
+#Unicaja
+weekly_followers_poblation<-matrix(rep(weekly_followers[6,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_unicaja_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[6,]<-colSums(weekly_followers_unicaja_prov)
+
+#Abanca
+weekly_followers_poblation<-matrix(rep(weekly_followers[7,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_abanca_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[7,]<-colSums(weekly_followers_abanca_prov)
+
+#Kutxabank
+weekly_followers_poblation<-matrix(rep(weekly_followers[8,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_kutxabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[8,]<-colSums(weekly_followers_kutxabank_prov)
+
+#Banco de Crédito Social Cooperativo
+weekly_followers_poblation<-matrix(rep(weekly_followers[9,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bcc_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[9,]<-colSums(weekly_followers_bcc_prov)
+
+#Ibercaja
+weekly_followers_poblation<-matrix(rep(weekly_followers[10,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_ibercaja_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[10,]<-colSums(weekly_followers_ibercaja_prov)
+```
+
+Represento la evolución del número de seguidores por pantalla para cerciorarme de que los errores de redondeo no la han modificado sustancialmente.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **2.4 Simulo la segmentación por edad y por género**
+
+[Explicación]
+
+```{r}
+bd_fb<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                      "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                      "Ibercaja"),15))
+bd_fb<-cbind(bd_fb,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+bd_fb<-cbind(bd_fb,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+bd_fb<-cbind(bd_fb,rep(1,150))
+names(bd_fb)<-c("Empresa", "Edad", "Género", "Semana")
+
+i=2
+
+while(i %in% 2:104){
+  bd_fb_aux<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                        "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                        "Ibercaja"),15))
+  bd_fb_aux<-cbind(bd_fb_aux,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+  bd_fb_aux<-cbind(bd_fb_aux,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+  bd_fb_aux<-cbind(bd_fb_aux,rep(i,150))
+  names(bd_fb_aux)<-c("Empresa", "Edad", "Género", "Semana")
+  bd_fb<-rbind(bd_fb,bd_fb_aux)
+  i<-i+1
+}
+
+bd_fb<-cbind(bd_fb,rep("Facebook",15600))
+bd_fb<-bd_fb[,c(4,1,2,3,5)]
+bd_fb<-arrange(bd_fb, Semana, Empresa)
+
+generar_porcentajes<-function(tendencia_edad,tendencia_genero){
+
+  pesos<-tendencia_edad[bd_fb$Edad]*tendencia_genero[bd_fb$Género]
+  
+  bd_fb$Porcentaje<-0
+  
+  for(grupo in seq(1, nrow(bd_fb), by=15)){
+    idx<-grupo:min(grupo+14, nrow(bd_fb))
+    pesos_grupo<-pesos[idx]*rnorm(15,1,0.1)
+    bd_fb$Porcentaje[idx]<<-pesos_grupo/sum(pesos_grupo)
+  }
+}
+
+generar_porcentajes(tendencia_edad=c("<15"=1, "15-20"=3, "21-30"=5,
+                                       "31-55"=13, ">55"=9),
+                    tendencia_genero=c("Hombre"=5, "Mujer"=5, "Otro"=0.5))
+names(bd_fb)<-c("Semana","Empresa", "Edad", "Género", "Red social", "Porcentaje")
+```
+
+#### **2.5 Simulo el número de «likes» semanal**
+
+[Explicación]
+
+```{r}
+weekly_likes<-round(weekly_post*abs(rnorm(1040,0,10)))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_likes)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «likes» semanales")
+```
+
+#### **2.6 Simulo el número de comentarios semanal**
+
+Calculo la evolución del número de comentarios semanal (`weekly_comments`) como producto de los «likes» semanales (`weekly_likes`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.25$.
+
+Además, corrijo aquellos valores estrictamente menores que $1$ y los sustituyo por valores generados mediante una distribución uniforme entre $1$ y $4$ (ambos incluidos).
+
+```{r}
+weekly_comments<-round(weekly_likes*abs(rnorm(1040,0,0.25)))
+weekly_comments[which(weekly_comments<1)]<-round(runif(sum(weekly_comments<3),1,4))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_comments)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de comentarios semanales")
+```
+
+#### **2.7 Simulo el número de «shares» semanal**
+
+Calculo la evolución del número de «shares» semanal (`weekly_shares`) como suma de dos componentes:
+
+1.  `comments_correlation`: El producto de los comentarios semanales (`weekly_comments`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.01$.
+2.  `comments_variability`:El producto de los comentarios semanales (`weekly_comments`) y las matriz traspuesta de las muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.025$.
+
+```{r}
+comments_correlation<-weekly_comments*abs(rnorm(1040,0,0.01))
+comments_variability<-weekly_comments*t(matrix(abs(rnorm(1040,0,0.025)),ncol=10))
+
+weekly_shares<-round(comments_correlation+comments_variability)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_shares)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «shares» semanales")
+```
+
+#### **2.8 Simulo el alcance semanal**
+
+Calculo la evolución del alcance semanal (`weekly_reach`) como suma de dos componentes:
+
+1.  `weekly_followers_reach`: Proporcional al producto del número de publicaciones semanales (`weekly_post`) y el número de seguidores semanal (`weekly_followers`).
+2.  `weekly_virality_reach`: El producto ponderado del número de «shares» semanal (`weekly_shares`), el número de «likes» semanal (`weekly_likes`) y los comentarios semanales (`weekly_comments`).
+
+```{r}
+weekly_followers_reach<-(weekly_post*weekly_followers)/250
+weekly_virality_reach<-5*weekly_shares+2*weekly_likes+weekly_comments
+
+weekly_reach<-round(weekly_followers_reach+weekly_virality_reach)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_reach)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del alcance semanal")
+```
+
+#### **2.9 Simulo las impresiones semanales**
+
+Calculo la evolución de las impresiones semanales (`weekly_impressions`) como producto entre el alcance semanal (`weekly_reach`) y las muestras de una distribución uniforme entre $1.5$ y $5$.
+
+```{r}
+weekly_impressions<-round(weekly_reach*runif(1040,1.5,5))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_impressions)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de las impresiones semanales")
+```
+
+#### **2.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
+
+[Explicación]
+
+```{r}
+sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
+sent_ai_val[which(sent_ai_val>0.97)]<-0.97
+sent_ai_val[which(sent_ai_val<0.05)]<-0.05
+sent_ai_val<-round(sent_ai_val,2)
+
+sent_ai<-matrix(rep("Neutro",1040),nrow=10)
+sent_ai[which(sent_ai_val<0.3)]<-rep("Negativo", sum(sent_ai_val<0.3))
+sent_ai[which(sent_ai_val<0.15)]<-rep("Muy negativo", sum(sent_ai_val<0.15))
+sent_ai[which(sent_ai_val>0.7)]<-rep("Positivo", sum(sent_ai_val>0.7))
+sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
+```
+
+#### **2.11 Creo las bases de datos normalizadas**
+
+**Base de datos de seguidores e interacciones**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+bd_aux<-expand.grid(
+  Semana=seq(1,104),
+  Empresa=empresas
+)
+
+bd_aux$Red_Social<-"Facebook"
+bd_aux$Publicaciones<-as.vector(t(weekly_post))
+bd_aux$Seguidores<-as.vector(t(weekly_followers))
+bd_aux$Likes<-as.vector(t(weekly_likes))
+bd_aux$Comentarios<-as.vector(t(weekly_comments))
+bd_aux$Shares<-as.vector(t(weekly_shares))
+bd_aux$Alcance<-as.vector(t(weekly_reach))
+bd_aux$Impresiones<-as.vector(t(weekly_impressions))
+bd_aux$Sentimiento_comentarios<-as.vector(t(sent_ai))
+
+bd<-rbind(bd,bd_aux)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd
+```
+
+**Base de datos de seguidores segmentados por provincia**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+provinces_name<-c( "Madrid", "Barcelona", "Valencia", "Alicante", "Sevilla", "Málaga", "Murcia",
+                   "Cádiz", "Islas Baleares", "Las Palmas", "Vizcaya", "La Coruña",
+                   "Santa Cruz de Tenerife", "Asturias", "Zaragoza", "Pontevedra", "Granada",
+                   "Tarragona", "Gerona", "Córdoba", "Almería", "Toledo", "Guipúzcoa", "Navarra",
+                   "Badajoz", "Castellón", "Jaén", "Cantabria", "Huelva", "Valladolid",
+                   "Ciudad Real", "Lérida", "León", "Albacete", "Cáceres", "Burgos", "Álava",
+                   "Salamanca", "La Rioja", "Lugo", "Orense", "Guadalajara", "Huesca", "Cuenca",
+                   "Zamora", "Palencia", "Ávila", "Segovia", "Teruel", "Soria", "Ceuta", "Melilla")
+
+matrices_prov<-list(
+  weekly_followers_santander_prov,
+  weekly_followers_bbva_prov,
+  weekly_followers_caixabank_prov,
+  weekly_followers_sabadell_prov,
+  weekly_followers_bankinter_prov,
+  weekly_followers_unicaja_prov,
+  weekly_followers_abanca_prov,
+  weekly_followers_kutxabank_prov,
+  weekly_followers_bcc_prov,
+  weekly_followers_ibercaja_prov
+)
+
+for (i in seq_along(matrices_prov)){
+  rownames(matrices_prov[[i]])<-provinces_name
+  colnames(matrices_prov[[i]])<-seq(1,104)
+}
+
+bd2_aux<-data.frame()
+
+for (i in seq_along(matrices_prov)){
+  mat<-matrices_prov[[i]]
+  
+  bd_temp<-as.data.frame(mat)
+  bd_temp$provincia<-rownames(mat)
+  bd_temp<-pivot_longer(bd_temp, cols=-provincia, names_to="semana", values_to="seguidores_facebook")
+  bd_temp$semana<-as.integer(bd_temp$semana)
+  bd_temp$empresa<-empresas[i]
+  
+  bd2_aux<-rbind(bd2_aux, bd_temp)
+}
+
+bd2_aux<-arrange(bd2_aux, empresa, semana, provincia)
+
+bd2<-merge(bd2,bd2_aux,by=c("provincia","semana","empresa"))
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd2
+```
+
+**Base de datos de porcentaje de seguidores segmentados por edad y género**
+
+```{r}
+bd3<-rbind(bd3,bd_fb)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd3
+```
+
+### **3 LinkedIn**
+
+#### **3.1  Simulo el número de publicaciones semanal**
+
+Establezo que el número de publicaciones semanales en instagram por empresa oscila entre $1$ y $3$. Además, determino que publicar $1$ y $2$ veces son equiprobables y que publicar $3$ es bastante menos probable.
+
+Para realizar la simulación con las restricciones comentadas, genero números aleatorios entre el $0.5$ y el $2.75$ según una distribución uniforme con `runif()`. 
+
+```{r}
+weekly_post<-matrix(round(runif(1040,0.5,2.75)),nrow=10)
+```
+
+Lo muestro por pantalla para cerciorarme de que la ejecución es correcta.
+
+```{r}
+weekly_post
+```
+
+#### **3.2 Simulo el número de seguidores semanal**
+
+Como punto de partida para la simulación tomo el número de seguidores a las 00:30 del día 12/05/2026 en las cuentas oficiales de España (variable `followers_beginning`).
+
+Calculo la evolución del número de seguidores semanal (`weekly_followers`) como suma de cuatro componentes:
+
+1.  `lin_evol`: El número de seguidores actuales multiplicado por una tendencia (`trend`) de crecimiento lineal  definida manualmente en función del número de seguidores y de la posición de la empresa.
+2.  `cycle`: Un factor cíclico en el que cada empresa tiene un periodo (`period`) distinto y la amplitud (`width`) es proporcional a la tendencia de crecimiento lineal.
+3.  `white_noise`: Un factor aleaotrio proporcional al producto entre muestras de una distribución normal tipificada y la amplitud (`width`).
+4.  `thanks_post`: Un factor de seguidores "ganados" gracias a las publicaciones, proporcional al producto entre el número de publicaciones semanal (`weekly_post`) y a la amplitud(`width`).
+
+```{r}
+t<-matrix(rep(seq(1,104),10),nrow=10,byrow=T)
+
+followers_beginning<-matrix(rep(c(113000, 155000, 280000, 263000, 115000, 39000, 72000, 35000, 44000, 
+                                  37000),104),nrow=10)
+
+trend<-c(275,300,350,325,275,150,225,125,150,125)
+lin_evol<-followers_beginning+sweep(t, MARGIN=1, trend, FUN="*")
+
+period<-c(17,-11,31,13,-5,19,23,-7,3,29)
+width<-trend/3
+cycle<-width*sin(period*t)
+
+white_noise<-50*width*matrix(rnorm(1040),nrow=10)
+
+thanks_post<-width*weekly_post/2
+
+weekly_followers<-round(lin_evol+white_noise+cycle+thanks_post)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **3.3 Simulo la segmentación por región**
+
+[Explicación]
+
+```{r}
+provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
+             1171547, 1167233, 1135623, 1087319, 1015128, 998443, 947818, 945797, 875530, 
+             830429, 773163, 770554, 755081, 733149, 683854, 665155, 627622, 618143, 593623, 
+             538789, 528644, 494848, 458226, 448030, 390751, 388190, 362663, 341961, 328446, 
+             326803, 326022, 305278, 285839, 230087, 195516, 168725, 159123, 158421, 153663, 
+             134545, 88747, 84627, 86487)
+
+#Santander
+weekly_followers_poblation<-matrix(rep(weekly_followers[1,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_santander_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[1,]<-colSums(weekly_followers_santander_prov)
+
+#BBVA
+weekly_followers_poblation<-matrix(rep(weekly_followers[2,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bbva_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[2,]<-colSums(weekly_followers_bbva_prov)
+
+#CaixaBank
+weekly_followers_poblation<-matrix(rep(weekly_followers[3,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_caixabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[3,]<-colSums(weekly_followers_caixabank_prov)
+
+#Sabadell
+weekly_followers_poblation<-matrix(rep(weekly_followers[4,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_sabadell_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[4,]<-colSums(weekly_followers_sabadell_prov)
+
+#Bankinter
+weekly_followers_poblation<-matrix(rep(weekly_followers[5,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bankinter_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[5,]<-colSums(weekly_followers_bankinter_prov)
+
+#Unicaja
+weekly_followers_poblation<-matrix(rep(weekly_followers[6,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_unicaja_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[6,]<-colSums(weekly_followers_unicaja_prov)
+
+#Abanca
+weekly_followers_poblation<-matrix(rep(weekly_followers[7,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_abanca_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[7,]<-colSums(weekly_followers_abanca_prov)
+
+#Kutxabank
+weekly_followers_poblation<-matrix(rep(weekly_followers[8,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_kutxabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[8,]<-colSums(weekly_followers_kutxabank_prov)
+
+#Banco de Crédito Social Cooperativo
+weekly_followers_poblation<-matrix(rep(weekly_followers[9,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bcc_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[9,]<-colSums(weekly_followers_bcc_prov)
+
+#Ibercaja
+weekly_followers_poblation<-matrix(rep(weekly_followers[10,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_ibercaja_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[10,]<-colSums(weekly_followers_ibercaja_prov)
+```
+
+Represento la evolución del número de seguidores por pantalla para cerciorarme de que los errores de redondeo no la han modificado sustancialmente.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **3.4 Simulo la segmentación por edad y por género**
+
+[Explicación]
+
+```{r}
+bd_lnk<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                      "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                      "Ibercaja"),15))
+bd_lnk<-cbind(bd_lnk,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+bd_lnk<-cbind(bd_lnk,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+bd_lnk<-cbind(bd_lnk,rep(1,150))
+names(bd_lnk)<-c("Empresa", "Edad", "Género", "Semana")
+
+i=2
+
+while(i %in% 2:104){
+  bd_lnk_aux<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                        "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                        "Ibercaja"),15))
+  bd_lnk_aux<-cbind(bd_lnk_aux,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+  bd_lnk_aux<-cbind(bd_lnk_aux,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+  bd_lnk_aux<-cbind(bd_lnk_aux,rep(i,150))
+  names(bd_lnk_aux)<-c("Empresa", "Edad", "Género", "Semana")
+  bd_lnk<-rbind(bd_lnk,bd_lnk_aux)
+  i<-i+1
+}
+
+bd_lnk<-cbind(bd_lnk,rep("LinkedIn",15600))
+bd_lnk<-bd_lnk[,c(4,1,2,3,5)]
+bd_lnk<-arrange(bd_lnk, Semana, Empresa)
+
+generar_porcentajes<-function(tendencia_edad,tendencia_genero){
+
+  pesos<-tendencia_edad[bd_lnk$Edad]*tendencia_genero[bd_lnk$Género]
+  
+  bd_lnk$Porcentaje<-0
+  
+  for(grupo in seq(1, nrow(bd_lnk), by=15)){
+    idx<-grupo:min(grupo+14, nrow(bd_lnk))
+    pesos_grupo<-pesos[idx]*rnorm(15,1,0.1)
+    bd_lnk$Porcentaje[idx]<<-pesos_grupo/sum(pesos_grupo)
+  }
+}
+
+generar_porcentajes(tendencia_edad=c("<15"=1, "15-20"=3, "21-30"=9,
+                                       "31-55"=15, ">55"=7),
+                    tendencia_genero=c("Hombre"=5, "Mujer"=4, "Otro"=0.1))
+names(bd_lnk)<-c("Semana","Empresa", "Edad", "Género", "Red social", "Porcentaje")
+```
+
+#### **3.5 Simulo el número de «likes» semanal**
+
+[Explicación]
+
+```{r}
+weekly_likes<-round(weekly_post*abs(rnorm(1040,0,50)))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_likes)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «likes» semanales")
+```
+
+#### **3.6 Simulo el número de comentarios semanal**
+
+Calculo la evolución del número de comentarios semanal (`weekly_comments`) como producto de los «likes» semanales (`weekly_likes`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.45$.
+
+Además, corrijo aquellos valores estrictamente menores que $3$ y los sustituyo por valores generados mediante una distribución uniforme entre $1$ y $4$ (ambos incluidos).
+
+```{r}
+weekly_comments<-round(weekly_likes*abs(rnorm(1040,0,0.45)))
+weekly_comments[which(weekly_comments<1)]<-round(runif(sum(weekly_comments<3),1,4))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_comments)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de comentarios semanales")
+```
+
+#### **3.7 Simulo el número de «shares» semanal**
+
+Calculo la evolución del número de «shares» semanal (`weekly_shares`) como suma de dos componentes:
+
+1.  `comments_correlation`: El producto de los comentarios semanales (`weekly_comments`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.01$.
+2.  `comments_variability`:El producto de los comentarios semanales (`weekly_comments`) y las matriz traspuesta de las muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.025$.
+
+```{r}
+comments_correlation<-weekly_comments*abs(rnorm(1040,0,0.01))
+comments_variability<-weekly_comments*t(matrix(abs(rnorm(1040,0,0.025)),ncol=10))
+
+weekly_shares<-round(comments_correlation+comments_variability)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_shares)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «shares» semanales")
+```
+
+#### **3.8 Simulo el alcance semanal**
+
+Calculo la evolución del alcance semanal (`weekly_reach`) como suma de dos componentes:
+
+1.  `weekly_followers_reach`: Proporcional al producto del número de publicaciones semanales (`weekly_post`) y el número de seguidores semanal (`weekly_followers`).
+2.  `weekly_virality_reach`: El producto ponderado del número de «shares» semanal (`weekly_shares`), el número de «likes» semanal (`weekly_likes`) y los comentarios semanales (`weekly_comments`).
+
+```{r}
+weekly_followers_reach<-(weekly_post*weekly_followers)/250
+weekly_virality_reach<-5*weekly_shares+weekly_likes+3*weekly_comments
+
+weekly_reach<-round(weekly_followers_reach+weekly_virality_reach)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_reach)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del alcance semanal")
+```
+
+#### **3.9 Simulo las impresiones semanales**
+
+Calculo la evolución de las impresiones semanales (`weekly_impressions`) como producto entre el alcance semanal (`weekly_reach`) y las muestras de una distribución uniforme entre $1.5$ y $5$.
+
+```{r}
+weekly_impressions<-round(weekly_reach*runif(1040,1.5,5))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_impressions)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de las impresiones semanales")
+```
+
+#### **3.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
+
+[Explicación]
+
+```{r}
+sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
+sent_ai_val[which(sent_ai_val>0.97)]<-0.97
+sent_ai_val[which(sent_ai_val<0.05)]<-0.05
+sent_ai_val[which(weekly_comments>500)]<-runif(sum(weekly_comments>500),0.65,0.9)
+sent_ai_val<-round(sent_ai_val,2)
+
+sent_ai<-matrix(rep("Neutro",1040),nrow=10)
+sent_ai[which(sent_ai_val<0.3)]<-rep("Negativo", sum(sent_ai_val<0.3))
+sent_ai[which(sent_ai_val<0.15)]<-rep("Muy negativo", sum(sent_ai_val<0.15))
+sent_ai[which(sent_ai_val>0.7)]<-rep("Positivo", sum(sent_ai_val>0.7))
+sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
+```
+
+#### **3.11 Creo las bases de datos normalizadas**
+
+**Base de datos de seguidores e interacciones**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+bd_aux<-expand.grid(
+  Semana=seq(1,104),
+  Empresa=empresas
+)
+
+bd_aux$Red_Social<-"LinkedIn"
+bd_aux$Publicaciones<-as.vector(t(weekly_post))
+bd_aux$Seguidores<-as.vector(t(weekly_followers))
+bd_aux$Likes<-as.vector(t(weekly_likes))
+bd_aux$Comentarios<-as.vector(t(weekly_comments))
+bd_aux$Shares<-as.vector(t(weekly_shares))
+bd_aux$Alcance<-as.vector(t(weekly_reach))
+bd_aux$Impresiones<-as.vector(t(weekly_impressions))
+bd_aux$Sentimiento_comentarios<-as.vector(t(sent_ai))
+
+bd<-rbind(bd,bd_aux)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd
+```
+
+**Base de datos de seguidores segmentados por provincia**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+provinces_name<-c( "Madrid", "Barcelona", "Valencia", "Alicante", "Sevilla", "Málaga", "Murcia",
+                   "Cádiz", "Islas Baleares", "Las Palmas", "Vizcaya", "La Coruña",
+                   "Santa Cruz de Tenerife", "Asturias", "Zaragoza", "Pontevedra", "Granada",
+                   "Tarragona", "Gerona", "Córdoba", "Almería", "Toledo", "Guipúzcoa", "Navarra",
+                   "Badajoz", "Castellón", "Jaén", "Cantabria", "Huelva", "Valladolid",
+                   "Ciudad Real", "Lérida", "León", "Albacete", "Cáceres", "Burgos", "Álava",
+                   "Salamanca", "La Rioja", "Lugo", "Orense", "Guadalajara", "Huesca", "Cuenca",
+                   "Zamora", "Palencia", "Ávila", "Segovia", "Teruel", "Soria", "Ceuta", "Melilla")
+
+matrices_prov<-list(
+  weekly_followers_santander_prov,
+  weekly_followers_bbva_prov,
+  weekly_followers_caixabank_prov,
+  weekly_followers_sabadell_prov,
+  weekly_followers_bankinter_prov,
+  weekly_followers_unicaja_prov,
+  weekly_followers_abanca_prov,
+  weekly_followers_kutxabank_prov,
+  weekly_followers_bcc_prov,
+  weekly_followers_ibercaja_prov
+)
+
+for (i in seq_along(matrices_prov)){
+  rownames(matrices_prov[[i]])<-provinces_name
+  colnames(matrices_prov[[i]])<-seq(1,104)
+}
+
+bd2_aux<-data.frame()
+
+for (i in seq_along(matrices_prov)){
+  mat<-matrices_prov[[i]]
+  
+  bd_temp<-as.data.frame(mat)
+  bd_temp$provincia<-rownames(mat)
+  bd_temp<-pivot_longer(bd_temp, cols=-provincia, names_to="semana", values_to="seguidores_linkedin")
+  bd_temp$semana<-as.integer(bd_temp$semana)
+  bd_temp$empresa<-empresas[i]
+  
+  bd2_aux<-rbind(bd2_aux, bd_temp)
+}
+
+bd2_aux<-arrange(bd2_aux, empresa, semana, provincia)
+
+bd2<-merge(bd2,bd2_aux,by=c("provincia","semana","empresa"))
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd2
+```
+
+**Base de datos de porcentaje de seguidores segmentados por edad y género**
+
+```{r}
+bd3<-rbind(bd3,bd_lnk)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd3
+```
+
+### **4 Tiktok**
+
+#### **4.1  Simulo el número de publicaciones semanal**
+
+Establezo que el número de publicaciones semanales en instagram por empresa oscila entre $1$ y $2$. Además, determino que publicar $1$ y $2$ veces son equiprobables.
+
+Para realizar la simulación con las restricciones comentadas, genero números aleatorios entre el $1$ y el $2$ según una distribución uniforme con `runif()`. 
+
+```{r}
+weekly_post<-matrix(round(runif(1040,1,2)),nrow=10)
+```
+
+Lo muestro por pantalla para cerciorarme de que la ejecución es correcta.
+
+```{r}
+weekly_post
+```
+
+#### **4.2 Simulo el número de seguidores semanal**
+
+Como punto de partida para la simulación tomo el número de seguidores a las 00:30 del día 12/05/2026 en las cuentas oficiales de España (variable `followers_beginning`).
+
+Calculo la evolución del número de seguidores semanal (`weekly_followers`) como suma de cuatro componentes:
+
+1.  `lin_evol`: El número de seguidores actuales multiplicado por una tendencia (`trend`) de crecimiento lineal definida manualmente en función del número de seguidores y de la posición de la empresa.
+2.  `cycle`: Un factor cíclico en el que cada empresa tiene un periodo (`period`) distinto y la amplitud (`width`) es proporcional a la tendencia de crecimiento lineal.
+3.  `white_noise`: Un factor aleaotrio proporcional al producto entre muestras de una distribución normal tipificada y la amplitud (`width`).
+4.  `thanks_post`: Un factor de seguidores "ganados" gracias a las publicaciones, proporcional al producto entre el número de publicaciones semanal (`weekly_post`) y a la amplitud(`width`).
+
+Para aquellas empresas que no tienen cuenta, la evolución de seguidores será constantemente $0$.
+
+```{r}
+t<-matrix(rep(seq(1,104),10),nrow=10,byrow=T)
+
+followers_beginning<-matrix(rep(c(185500, 103700, 120100, 0, 118800, 0, 8940, 17100, 0, 0),104),nrow=10)
+
+trend<-c(200,125,150,0,135,0,25,75,0,0)
+lin_evol<-followers_beginning+sweep(t, MARGIN=1, trend, FUN="*")
+
+period<-c(17,-11,31,13,-5,19,23,-7,3,29)
+width<-trend/3
+cycle<-width*sin(period*t)
+
+white_noise<-50*width*matrix(rnorm(1040),nrow=10)
+
+thanks_post<-width*weekly_post/2
+
+weekly_followers<-round(lin_evol+white_noise+cycle+thanks_post)
+weekly_followers[which(followers_beginning==0)]<-0
+weekly_post[which(followers_beginning==0)]<-0
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **4.3 Simulo la segmentación por región**
+
+[Explicación]
+
+```{r}
+provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
+             1171547, 1167233, 1135623, 1087319, 1015128, 998443, 947818, 945797, 875530, 
+             830429, 773163, 770554, 755081, 733149, 683854, 665155, 627622, 618143, 593623, 
+             538789, 528644, 494848, 458226, 448030, 390751, 388190, 362663, 341961, 328446, 
+             326803, 326022, 305278, 285839, 230087, 195516, 168725, 159123, 158421, 153663, 
+             134545, 88747, 84627, 86487)
+
+#Santander
+weekly_followers_poblation<-matrix(rep(weekly_followers[1,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_santander_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[1,]<-colSums(weekly_followers_santander_prov)
+
+#BBVA
+weekly_followers_poblation<-matrix(rep(weekly_followers[2,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bbva_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[2,]<-colSums(weekly_followers_bbva_prov)
+
+#CaixaBank
+weekly_followers_poblation<-matrix(rep(weekly_followers[3,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_caixabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[3,]<-colSums(weekly_followers_caixabank_prov)
+
+#Bankinter
+weekly_followers_poblation<-matrix(rep(weekly_followers[5,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_bankinter_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[5,]<-colSums(weekly_followers_bankinter_prov)
+
+#Abanca
+weekly_followers_poblation<-matrix(rep(weekly_followers[7,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_abanca_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[7,]<-colSums(weekly_followers_abanca_prov)
+
+#Kutxabank
+weekly_followers_poblation<-matrix(rep(weekly_followers[8,],52),nrow=52,byrow=TRUE)
+poblation<-matrix(rep(provinces_pob,104),nrow=52)
+white_noise<-rnorm(52*104,1,0.025)
+poblation<-white_noise*poblation
+poblation<-sweep(poblation, MARGIN=2, colSums(poblation), FUN="/")
+weekly_followers_kutxabank_prov<-round(weekly_followers_poblation*poblation)
+weekly_followers[8,]<-colSums(weekly_followers_kutxabank_prov)
+
+#Resto (sin cuenta de Tiktok)
+weekly_followers_sabadell_prov<-matrix(rep(0,52*104),nrow=52)
+weekly_followers_unicaja_prov<-matrix(rep(0,52*104),nrow=52)
+weekly_followers_bcc_prov<-matrix(rep(0,52*104),nrow=52)
+weekly_followers_ibercaja_prov<-matrix(rep(0,52*104),nrow=52)
+```
+
+Represento la evolución del número de seguidores por pantalla para cerciorarme de que los errores de redondeo no la han modificado sustancialmente.
+
+```{r}
+evol<-t(weekly_followers)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del número de seguidores")
+```
+
+#### **3.4 Simulo la segmentación por edad y por género**
+
+[Explicación]
+
+```{r}
+bd_tktk<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                      "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                      "Ibercaja"),15))
+bd_tktk<-cbind(bd_tktk,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+bd_tktk<-cbind(bd_tktk,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+bd_tktk<-cbind(bd_tktk,rep(1,150))
+names(bd_tktk)<-c("Empresa", "Edad", "Género", "Semana")
+
+i=2
+
+while(i %in% 2:104){
+  bd_tktk_aux<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
+                        "Unicaja", "Abanca", "Kutxabank", "Banco de Crédito Social Cooperativo",
+                        "Ibercaja"),15))
+  bd_tktk_aux<-cbind(bd_tktk_aux,c(rep("<15",30),rep("15-20",30),rep("21-30",30),rep("31-55",30),rep(">55",30)))
+  bd_tktk_aux<-cbind(bd_tktk_aux,rep(c(rep("Hombre",10),rep("Mujer",10),rep("Otro",10)),5))
+  bd_tktk_aux<-cbind(bd_tktk_aux,rep(i,150))
+  names(bd_tktk_aux)<-c("Empresa", "Edad", "Género", "Semana")
+  bd_tktk<-rbind(bd_tktk,bd_tktk_aux)
+  i<-i+1
+}
+
+bd_tktk<-cbind(bd_tktk,rep("Tiktok",15600))
+bd_tktk<-bd_tktk[,c(4,1,2,3,5)]
+bd_tktk<-arrange(bd_tktk, Semana, Empresa)
+
+generar_porcentajes<-function(tendencia_edad,tendencia_genero){
+
+  pesos<-tendencia_edad[bd_tktk$Edad]*tendencia_genero[bd_tktk$Género]
+  
+  bd_tktk$Porcentaje<-0
+  
+  for(grupo in seq(1, nrow(bd_tktk), by=15)){
+    idx<-grupo:min(grupo+14, nrow(bd_tktk))
+    pesos_grupo<-pesos[idx]*rnorm(15,1,0.1)
+    bd_tktk$Porcentaje[idx]<<-pesos_grupo/sum(pesos_grupo)
+  }
+}
+
+generar_porcentajes(tendencia_edad=c("<15"=7, "15-20"=15, "21-30"=13,
+                                       "31-55"=3, ">55"=1),
+                    tendencia_genero=c("Hombre"=5, "Mujer"=5, "Otro"=1))
+
+bd_tktk$Porcentaje[bd_tktk$Empresa %in% c("Banco Sabadell", "Unicaja", 
+                                  "Banco de Crédito Social Cooperativo", "Ibercaja")]<-0
+names(bd_tktk)<-c("Semana","Empresa", "Edad", "Género", "Red social", "Porcentaje")
+```
+
+#### **4.5 Simulo el número de «likes» semanal**
+
+[Explicación]
+
+```{r}
+weekly_likes<-round(weekly_post*abs(rnorm(1040,0,200)))
+weekly_likes[which(weekly_followers==0)]<-0
+
+weekly_likes[which(weekly_likes<600)]<-
+  round(weekly_likes[which(weekly_likes<600)]/runif(length(which(weekly_likes<600)),1.25,3))
+weekly_likes[which(weekly_likes>850)]<-
+  round(weekly_likes[which(weekly_likes>850)]*runif(length(which(weekly_likes>850)),1.25,3))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_likes)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «likes» semanales")
+```
+
+#### **4.6 Simulo el número de comentarios semanal**
+
+Calculo la evolución del número de comentarios semanal (`weekly_comments`) como producto de los «likes» semanales (`weekly_likes`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.05$.
+
+```{r}
+weekly_comments<-round(weekly_likes*abs(rnorm(1040,0,0.05)))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_comments)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de comentarios semanales")
+```
+
+#### **4.7 Simulo el número de «shares» semanal**
+
+Calculo la evolución del número de «shares» semanal (`weekly_shares`) como suma de dos componentes:
+
+1.  `comments_correlation`: El producto de los comentarios semanales (`weekly_comments`) y muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.01$.
+2.  `comments_variability`:El producto de los comentarios semanales (`weekly_comments`) y las matriz traspuesta de las muestras en valor absoluto de una distribución normal con media $0$ y varianza $0.025$.
+
+```{r}
+comments_correlation<-weekly_comments*abs(rnorm(1040,0,0.01))
+comments_variability<-weekly_comments*t(matrix(abs(rnorm(1040,0,0.025)),ncol=10))
+
+weekly_shares<-round(comments_correlation+comments_variability)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_shares)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de «shares» semanales")
+```
+
+#### **4.8 Simulo el alcance semanal**
+
+Calculo la evolución del alcance semanal (`weekly_reach`) como suma de dos componentes:
+
+1.  `weekly_followers_reach`: Proporcional al producto del número de publicaciones semanales (`weekly_post`) y el número de seguidores semanal (`weekly_followers`).
+2.  `weekly_virality_reach`: El producto ponderado del número de «shares» semanal (`weekly_shares`), el número de «likes» semanal (`weekly_likes`) y los comentarios semanales (`weekly_comments`).
+
+```{r}
+weekly_followers_reach<-(weekly_post*weekly_followers)/250
+weekly_virality_reach<-10*weekly_shares+5*weekly_likes+3*weekly_comments
+
+weekly_reach<-round(weekly_followers_reach+weekly_virality_reach)
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_reach)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del alcance semanal")
+```
+
+#### **4.9 Simulo las impresiones semanales**
+
+Calculo la evolución de las impresiones semanales (`weekly_impressions`) como producto entre el alcance semanal (`weekly_reach`) y las muestras de una distribución uniforme entre $1.5$ y $10$.
+
+```{r}
+weekly_impressions<-round(weekly_reach*runif(1040,1.5,10))
+```
+
+Lo represento por pantalla para cerciorarme de que los datos generados son coherentes.
+
+```{r}
+evol<-t(weekly_impressions)
+
+# Crear gráfico base
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución de las impresiones semanales")
+```
+
+#### **4.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
+
+[Explicación]
+
+```{r}
+sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
+sent_ai_val[which(sent_ai_val>0.97)]<-0.97
+sent_ai_val[which(sent_ai_val<0.05)]<-0.05
+sent_ai_val[which(weekly_comments==0)]<-0
+sent_ai_val<-round(sent_ai_val,2)
+
+sent_ai<-matrix(rep("Neutro",1040),nrow=10)
+sent_ai[which(sent_ai_val<0.3)]<-rep("Negativo", sum(sent_ai_val<0.3))
+sent_ai[which(sent_ai_val<0.15)]<-rep("Muy negativo", sum(sent_ai_val<0.15))
+sent_ai[which(sent_ai_val==0)]<-rep("NA", sum(sent_ai_val==0))
+sent_ai[which(sent_ai_val>0.7)]<-rep("Positivo", sum(sent_ai_val>0.7))
+sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
+```
+
+#### **4.11 Creo las bases de datos normalizadas**
+
+**Base de datos de seguidores e interacciones**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+bd_aux<-expand.grid(
+  Semana=seq(1,104),
+  Empresa=empresas
+)
+
+bd_aux$Red_Social<-"Tiktok"
+bd_aux$Publicaciones<-as.vector(t(weekly_post))
+bd_aux$Seguidores<-as.vector(t(weekly_followers))
+bd_aux$Likes<-as.vector(t(weekly_likes))
+bd_aux$Comentarios<-as.vector(t(weekly_comments))
+bd_aux$Shares<-as.vector(t(weekly_shares))
+bd_aux$Alcance<-as.vector(t(weekly_reach))
+bd_aux$Impresiones<-as.vector(t(weekly_impressions))
+bd_aux$Sentimiento_comentarios<-as.vector(t(sent_ai))
+
+bd<-rbind(bd,bd_aux)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd
+```
+
+**Base de datos de seguidores segmentados por provincia**
+
+[Explicación]
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+provinces_name<-c( "Madrid", "Barcelona", "Valencia", "Alicante", "Sevilla", "Málaga", "Murcia",
+                   "Cádiz", "Islas Baleares", "Las Palmas", "Vizcaya", "La Coruña",
+                   "Santa Cruz de Tenerife", "Asturias", "Zaragoza", "Pontevedra", "Granada",
+                   "Tarragona", "Gerona", "Córdoba", "Almería", "Toledo", "Guipúzcoa", "Navarra",
+                   "Badajoz", "Castellón", "Jaén", "Cantabria", "Huelva", "Valladolid",
+                   "Ciudad Real", "Lérida", "León", "Albacete", "Cáceres", "Burgos", "Álava",
+                   "Salamanca", "La Rioja", "Lugo", "Orense", "Guadalajara", "Huesca", "Cuenca",
+                   "Zamora", "Palencia", "Ávila", "Segovia", "Teruel", "Soria", "Ceuta", "Melilla")
+
+matrices_prov<-list(
+  weekly_followers_santander_prov,
+  weekly_followers_bbva_prov,
+  weekly_followers_caixabank_prov,
+  weekly_followers_sabadell_prov,
+  weekly_followers_bankinter_prov,
+  weekly_followers_unicaja_prov,
+  weekly_followers_abanca_prov,
+  weekly_followers_kutxabank_prov,
+  weekly_followers_bcc_prov,
+  weekly_followers_ibercaja_prov
+)
+
+for (i in seq_along(matrices_prov)){
+  rownames(matrices_prov[[i]])<-provinces_name
+  colnames(matrices_prov[[i]])<-seq(1,104)
+}
+
+bd2_aux<-data.frame()
+
+for (i in seq_along(matrices_prov)){
+  mat<-matrices_prov[[i]]
+  
+  bd_temp<-as.data.frame(mat)
+  bd_temp$provincia<-rownames(mat)
+  bd_temp<-pivot_longer(bd_temp, cols=-provincia, names_to="semana", values_to="seguidores_tiktok")
+  bd_temp$semana<-as.integer(bd_temp$semana)
+  bd_temp$empresa<-empresas[i]
+  
+  bd2_aux<-rbind(bd2_aux, bd_temp)
+}
+
+bd2_aux<-arrange(bd2_aux, empresa, semana, provincia)
+
+bd2<-merge(bd2,bd2_aux,by=c("provincia","semana","empresa"))
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd2
+```
+
+**Base de datos de porcentaje de seguidores segmentados por edad y género**
+
+```{r}
+bd3<-rbind(bd3,bd_tktk)
+```
+
+Lo muestro por pantalla para cerciorarme de que el resultado corresponde con lo que pretendía.
+
+```{r}
+bd3
+```
+
+### **5. Exportar las bases de datos**
+
+Escribo la base de datos de menos columnas en formato `.xlsx` y las otras dos bases de datos en formato `.csv`
+
+```{r}
+write.xlsx(bd, "Evolución_seguidores_e_interacciones.xlsx")
+write.csv(bd2, "Seguidores_segmentados_provincias.csv")
+write.csv(bd3, "Porc_seguidores_segmentados_edad_genero.csv")
+```
+
+## **Evolución de los KPI's en SEO y web**
+## **Evolución de los KPI's en «paid media»**
