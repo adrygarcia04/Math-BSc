@@ -5,3 +5,4 @@
 
 # **ARCHIVOS EN LA CARPETA || FILES IN THIS FOLDER**
 * **Simulación_de_PE's_y_ST's** (Solo disponible en español todavía || Only available in Spanish yet)
+* **Generador datos sintéticos** (Incompleto)
