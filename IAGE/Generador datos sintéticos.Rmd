@@ -96,7 +96,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **1.3 Simulo la segmentación por región**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
@@ -209,7 +209,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **1.4 Simulo la segmentación por edad y por género**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 bd_ig<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
@@ -374,7 +374,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **1.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
@@ -394,7 +394,7 @@ sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
 
 **Base de datos de seguidores e interacciones**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -424,7 +424,7 @@ bd
 
 **Base de datos de seguidores segmentados por provincia**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -553,7 +553,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **2.3 Simulo la segmentación por región**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
@@ -666,7 +666,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **2.4 Simulo la segmentación por edad y por género**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 bd_fb<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
@@ -716,7 +716,7 @@ names(bd_fb)<-c("Semana","Empresa", "Edad", "Género", "Red social", "Porcentaje
 
 #### **2.5 Simulo el número de «likes» semanal**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 weekly_likes<-round(weekly_post*abs(rnorm(1040,0,10)))
@@ -826,7 +826,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **2.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
@@ -845,7 +845,7 @@ sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
 
 **Base de datos de seguidores e interacciones**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -877,7 +877,7 @@ bd
 
 **Base de datos de seguidores segmentados por provincia**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -1008,7 +1008,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **3.3 Simulo la segmentación por región**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
@@ -1121,7 +1121,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **3.4 Simulo la segmentación por edad y por género**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 bd_lnk<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
@@ -1281,7 +1281,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **3.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
@@ -1301,7 +1301,7 @@ sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
 
 **Base de datos de seguidores e interacciones**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -1333,7 +1333,7 @@ bd
 
 **Base de datos de seguidores segmentados por provincia**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -1467,7 +1467,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **4.3 Simulo la segmentación por región**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 provinces_pob<-c(7113886, 5959941, 2763996, 2033566, 1977664, 1791183, 1586989, 1261420, 1249844, 
@@ -1550,7 +1550,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **3.4 Simulo la segmentación por edad y por género**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 bd_tktk<-data.frame(rep(c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter",
@@ -1603,7 +1603,7 @@ names(bd_tktk)<-c("Semana","Empresa", "Edad", "Género", "Red social", "Porcenta
 
 #### **4.5 Simulo el número de «likes» semanal**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 weekly_likes<-round(weekly_post*abs(rnorm(1040,0,200)))
@@ -1716,7 +1716,7 @@ matplot(evol, type="l", lty=1, col=1:10,
 
 #### **4.10 Simulo la valoración de un agente de IA del sentimiento en los comentarios semanales**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 sent_ai_val<-matrix(abs(rnorm(1040,mean=0.4,0.25)),nrow=10)
@@ -1737,7 +1737,7 @@ sent_ai[which(sent_ai_val>0.85)]<-rep("Muy positivo", sum(sent_ai_val>0.85))
 
 **Base de datos de seguidores e interacciones**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -1769,7 +1769,7 @@ bd
 
 **Base de datos de seguidores segmentados por provincia**
 
-[Explicación]
+[Explicación del código]
 
 ```{r}
 empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
@@ -1850,4 +1850,285 @@ write.csv(bd3, "Porc_seguidores_segmentados_edad_genero.csv")
 ```
 
 ## **Evolución de los KPI's en SEO y web**
-## **Evolución de los KPI's en «paid media»**
+
+### Simulo las impresiones semanales
+
+```{r}
+t<-matrix(rep(seq(1,104),10),nrow=10,byrow=T)
+
+traffic_beginning<-matrix(rep(c(2700000, 2500000, 4160000, 1400000, 1500000, 1250000, 1170000, 1000000, 900000, 
+                                  750000),104),nrow=10)
+
+trend<-c(1000,950,1000,800,700,600,500,400,300,250)
+lin_evol<-traffic_beginning+sweep(t, MARGIN=1, trend, FUN="*")
+
+period<-c(37,-11,31,13,-5,19,23,-7,3,29)
+width<-trend^1.5
+cycle<-abs(width*sin(period*t))
+
+white_noise<-abs(10*width*matrix(rnorm(1040),nrow=10))
+
+weekly_traffic<-round(lin_evol+white_noise+cycle)
+```
+
+```{r}
+evol<-t(weekly_traffic)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del tráfico web")
+```
+
+### **Simulo la segmentación por tipo de tráfico**
+
+[Explicación del código]
+
+```{r}
+type_prob<-c(0.41,0.35,0.15,0.09)
+
+#Santander
+weekly_traffic_type<-matrix(rep(weekly_traffic[1,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_santander_type<-round(weekly_traffic_type*type)
+weekly_traffic[1,]<-colSums(weekly_traffic_santander_type)
+
+#BBVA
+weekly_traffic_type<-matrix(rep(weekly_traffic[2,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_bbva_type<-round(weekly_traffic_type*type)
+weekly_traffic[2,]<-colSums(weekly_traffic_bbva_type)
+
+#CaixaBank
+weekly_traffic_type<-matrix(rep(weekly_traffic[3,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_caixabank_type<-round(weekly_traffic_type*type)
+weekly_traffic[3,]<-colSums(weekly_traffic_caixabank_type)
+
+#Sabadell
+weekly_traffic_type<-matrix(rep(weekly_traffic[4,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_sabadell_type<-round(weekly_traffic_type*type)
+weekly_traffic[4,]<-colSums(weekly_traffic_sabadell_type)
+
+#Bankinter
+weekly_traffic_type<-matrix(rep(weekly_traffic[5,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_bankinter_type<-round(weekly_traffic_type*type)
+weekly_traffic[5,]<-colSums(weekly_traffic_bankinter_type)
+
+#Unicaja
+weekly_traffic_type<-matrix(rep(weekly_traffic[6,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_unicaja_type<-round(weekly_traffic_type*type)
+weekly_traffic[6,]<-colSums(weekly_traffic_unicaja_type)
+
+#Abanca
+weekly_traffic_type<-matrix(rep(weekly_traffic[7,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_abanca_type<-round(weekly_traffic_type*type)
+weekly_traffic[7,]<-colSums(weekly_traffic_abanca_type)
+
+#Kutxabank
+weekly_traffic_type<-matrix(rep(weekly_traffic[8,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_kutxabank_type<-round(weekly_traffic_type*type)
+weekly_traffic[8,]<-colSums(weekly_traffic_kutxabank_type)
+
+#Banco de Crédito Social Cooperativo
+weekly_traffic_type<-matrix(rep(weekly_traffic[9,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_bcc_type<-round(weekly_traffic_type*type)
+weekly_traffic[9,]<-colSums(weekly_traffic_bcc_type)
+
+#Ibercaja
+weekly_traffic_type<-matrix(rep(weekly_traffic[10,],4),nrow=4,byrow=TRUE)
+type<-matrix(rep(type_prob,104),nrow=4)
+white_noise<-rnorm(4*104,1,0.125)
+type<-white_noise*type
+type<-sweep(type, MARGIN=2, colSums(type), FUN="/")
+weekly_traffic_ibercaja_type<-round(weekly_traffic_type*type)
+weekly_traffic[10,]<-colSums(weekly_traffic_ibercaja_type)
+```
+
+```{r}
+evol<-t(weekly_traffic)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del tráfico web")
+```
+
+### **Simulo las impresiones**
+
+```{r}
+weekly_impressions<-round(weekly_traffic*(1+abs(rnorm(1040,25,5))))
+```
+
+```{r}
+evol<-t(weekly_impressions)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del tráfico web")
+```
+
+### **Simulo los clicks**
+
+```{r}
+weekly_clicks<-round(weekly_traffic*(1+abs(rnorm(1040,0.125,0.1))))
+```
+
+```{r}
+evol<-t(weekly_clicks)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del tráfico web")
+```
+
+### **Simulo la tasa de rebote**
+
+```{r}
+weekly_bound_rate<-matrix(rep(c(25.17,14.29,17.51,17.57,25.91,25.46,22.59,16.89,40.52,26.66),104),nrow=10)
+weekly_bound_rate<-round(weekly_bound_rate*abs(rnorm(1040,1,0.05)),2)
+```
+
+```{r}
+evol<-t(weekly_bound_rate)
+
+matplot(evol, type="l", lty=1, col=1:10,
+        xlab="Tiempo (semanas)", ylab="Valor",
+        main="Evolución del tráfico web")
+```
+
+### **Simulo los core vitals**
+
+```{r}
+matrix(rep(sample(1:10,10),100),nrow=10)
+```
+
+```{r}
+cambios<-matrix(rep(0,1040),nrow=10)
+posiciones<-sample(1:1040,75)
+
+weekly_lcp<-matrix(rep(sample(1900:3000,10),104),nrow=10)
+cambios[posiciones]<-round(rnorm(75,-100,250))
+cambios<-t(apply(cambios, 1, cumsum))
+weekly_lcp<-weekly_lcp+cambios
+weekly_lcp[weekly_lcp<75]<-rep(75,sum(weekly_lcp<75))
+
+cambios<-matrix(rep(0,1040),nrow=10)
+
+weekly_inp<-matrix(rep(sample(175:225,10),104),nrow=10)
+cambios[posiciones]<-round(rnorm(75,-10,10))
+cambios<-t(apply(cambios, 1, cumsum))
+weekly_inp<-weekly_inp+cambios
+weekly_inp[weekly_inp<15]<-rep(15,sum(weekly_inp<15))
+
+cambios<-matrix(rep(0,1040),nrow=10)
+
+weekly_cls<-matrix(rep(sample(90:110,10)/1000,104),nrow=10)
+cambios[posiciones]<-round(rnorm(75,0,0.0125),3)
+cambios<-t(apply(cambios, 1, cumsum))
+weekly_cls<-weekly_cls+cambios
+weekly_cls[weekly_cls<0.025]<-rep(0.025,sum(weekly_inp<0.025))
+```
+
+### **Creo las bases de datos**
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+bd4<-expand.grid(
+  Semana=seq(1,104),
+  Empresa=empresas
+)
+
+bd4$Impresiones<-as.vector(t(weekly_impressions))
+bd4$Clicks<-as.vector(t(weekly_clicks))
+bd4$Tráfico<-as.vector(t(weekly_traffic))
+bd4$Tasa_de_rebote<-as.vector(t(weekly_bound_rate))
+bd4$LCP<-as.vector(t(weekly_lcp))
+bd4$INP<-as.vector(t(weekly_inp))
+bd4$CLS<-as.vector(t(weekly_cls))
+
+bd4
+```
+
+```{r}
+empresas<-c("Banco Santander", "BBVA", "CaixaBank", "Banco Sabadell", "Bankinter", "Unicaja", "Abanca", 
+            "Kutxabank", "Banco de Crédito Social Cooperativo", "Ibercaja")
+
+type_name<-c( "Directo","Orgánico","Referido","Pagado")
+
+matrices_type<-list(
+  weekly_traffic_santander_type,
+  weekly_traffic_bbva_type,
+  weekly_traffic_caixabank_type,
+  weekly_traffic_sabadell_type,
+  weekly_traffic_bankinter_type,
+  weekly_traffic_unicaja_type,
+  weekly_traffic_abanca_type,
+  weekly_traffic_kutxabank_type,
+  weekly_traffic_bcc_type,
+  weekly_traffic_ibercaja_type
+)
+
+for (i in seq_along(matrices_type)){
+  rownames(matrices_type[[i]])<-type_name
+  colnames(matrices_type[[i]])<-seq(1,104)
+}
+
+bd5<-data.frame()
+
+for (i in seq_along(matrices_type)){
+  mat<-matrices_type[[i]]
+  
+  bd_temp<-as.data.frame(mat)
+  bd_temp$Tipo<-rownames(mat)
+  bd_temp<-pivot_longer(bd_temp, cols=-Tipo, names_to="Semana", values_to="Cantidad")
+  bd_temp$Semana<-as.integer(bd_temp$Semana)
+  bd_temp$Empresa<-empresas[i]
+  
+  bd5<-rbind(bd5, bd_temp)
+}
+
+bd5<-arrange(bd5, Empresa, Semana, Tipo)
+
+bd5
+```
+
+### Exporto las bases de datos
+
+```{r}
+write.xlsx(bd4, "Evolución_web_y_SEO.xlsx")
+write.csv(bd5, "Tráfico_segmentado_tipo.csv")
+```
