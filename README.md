@@ -8,7 +8,7 @@
 ⚠️ File uploading is still very incomplete.
 
 ## **ARCHIVOS EN EL REPOSITORIO || FOLDERS IN THIS REPOSITORY**
+* **EC:** Estadística computacional || Computational statistics
 * **IAGE:** Informática aplicada a la gestión empresarial || IT applied to business management
 * **INF:** Informática I y II || IT I & II
 * **PE:** Procesos estocásticos || Stochastic processes
-* **EC:** Estadística computacional || Computational statistics
