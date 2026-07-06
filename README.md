@@ -12,3 +12,4 @@
 * **IAGE:** Informática aplicada a la gestión empresarial || IT applied to business management
 * **INF:** Informática I y II || IT I & II
 * **PE:** Procesos estocásticos || Stochastic processes
+* **TFG:** Trabajo de fin de grado || Undergraduate dissertation
